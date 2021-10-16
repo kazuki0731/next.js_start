@@ -3,6 +3,8 @@ import path from "path";
 import matter from "gray-matter";
 import remark from "remark";
 import html from "remark-html";
+import fetch from "node-fetch";
+const base64 = require("js-base64").Base64;
 
 const postsDirectory = path.join(process.cwd(), "posts");
 
@@ -38,22 +40,12 @@ export function getSortedPostsData() {
   });
 }
 
-export function getAllPostIds() {
-  const fileNames = fs.readdirSync(postsDirectory);
-
-  // Returns an array that looks like this:
-  // [
-  //   {
-  //     params: {
-  //       id: 'ssg-ssr'
-  //     }
-  //   },
-  //   {
-  //     params: {
-  //       id: 'pre-rendering'
-  //     }
-  //   }
-  // ]
+export async function getAllPostIds() {
+  const repoUrl =
+    "https://api.github.com/repos/kazuki0731/next.js_start/contents/posts";
+  const res = await fetch(repoUrl);
+  const files = await res.json();
+  const fileNames = files.map((file) => file.name);
   return fileNames.map((fileName) => {
     return {
       params: {
@@ -64,8 +56,10 @@ export function getAllPostIds() {
 }
 
 export async function getPostData(id) {
-  const fullPath = path.join(postsDirectory, `${id}.md`);
-  const fileContents = fs.readFileSync(fullPath, "utf8");
+  const repoUrl = `https://api.github.com/repos/kazuki0731/next.js_start/contents/posts/${id}.md`;
+  const res = await fetch(repoUrl);
+  const files = await res.json();
+  const fileContents = base64.decode(files.content);
 
   // Use gray-matter to parse the post metadata section
   const matterResult = matter(fileContents);
