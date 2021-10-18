@@ -22,17 +22,24 @@ export default function Post({ postData }) {
   );
 }
 
+// ビルド時にプリレンダリングするファイルをまとめて取得する
 export async function getStaticPaths() {
   const paths = await getAllPostIds();
+  console.log(paths)
+  // ここのidはファイルのパス名と一致している必要がある
+  // [ { params: { id: 'pre-rendering' } }, { params: { id: 'ssg-ssr' } } ]
+  // すべての記事の名前（id）を配列で取得している
   return {
     paths,
     fallback: false,
   };
 }
 
+// 各記事のidを受け取り、それをもとに記事のデータを取得している、そしてそのデータを上のコンポーネントのpropsに渡している（たぶん）
 export async function getStaticProps({ params }) {
-  // ここのparamsってどこから来てる？
+  // 開いたページに対するid（ファイル名）をparamsとして受け取っている
   const postData = await getPostData(params.id);
+  console.log(postData);
   return {
     props: {
       postData,
